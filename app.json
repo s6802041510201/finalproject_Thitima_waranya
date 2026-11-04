@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Rocket Rush",
+    "slug": "rocket-rush-asteroid-escape",
+    "scheme": [
+      "rocketrush",
+      "com.miniproject.rocketrush"
+    ],
+    "version": "1.0.1",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "plugins": [
+      "expo-router",
+      [
+        "expo-sensors",
+        {
+          "motionPermission": "Allow Rocket Rush to use motion controls."
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.miniproject.rocketrush",
+      "buildNumber": "2"
+    },
+    "android": {
+      "package": "com.miniproject.rocketrush",
+      "versionCode": 2
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single"
+    },
+    "experiments": {
+      "typedRoutes": false
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      }
+    }
+  }
+}

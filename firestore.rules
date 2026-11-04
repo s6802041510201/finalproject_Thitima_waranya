@@ -1,0 +1,130 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function owns(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function validUser(uid) {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'uid', 'username', 'email', 'totalCoins', 'diamonds', 'selectedRocket',
+          'settings', 'revision', 'createdAt', 'updatedAt', 'lastLoginAt'
+        ])
+        && data.keys().hasOnly([
+          'uid', 'username', 'email', 'totalCoins', 'diamonds', 'selectedRocket',
+          'settings', 'revision', 'createdAt', 'updatedAt', 'lastLoginAt'
+        ])
+        && data.uid == uid
+        && data.username is string && data.username.size() >= 2 && data.username.size() <= 24
+        && data.email is string && data.email.size() <= 254
+        && data.totalCoins is number && data.totalCoins >= 0
+        && data.diamonds is number && data.diamonds >= 0
+        && data.selectedRocket is string
+        && data.settings is map
+        && data.settings.keys().hasAll(['soundEffects', 'backgroundMusic', 'vibration', 'sensitivity', 'invertTilt', 'controlMode', 'calibration', 'gyroDodge', 'reducedEffects'])
+        && data.settings.keys().hasOnly(['soundEffects', 'backgroundMusic', 'vibration', 'sensitivity', 'invertTilt', 'controlMode', 'calibration', 'gyroDodge', 'reducedEffects'])
+        && data.settings.soundEffects is bool
+        && data.settings.backgroundMusic is bool
+        && data.settings.vibration is bool
+        && data.settings.sensitivity is string
+        && data.settings.invertTilt is bool
+        && data.settings.controlMode is string
+        && data.settings.calibration is number
+        && data.settings.gyroDodge is bool
+        && data.settings.reducedEffects is bool
+        && data.revision is int && data.revision >= 1
+        && data.createdAt is timestamp
+        && data.updatedAt == request.time
+        && data.lastLoginAt is timestamp;
+    }
+
+    function validInventory() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['ownedRockets', 'upgrades', 'inventory', 'loadout', 'revision', 'updatedAt'])
+        && data.keys().hasOnly(['ownedRockets', 'upgrades', 'inventory', 'loadout', 'revision', 'updatedAt'])
+        && data.ownedRockets is list
+        && data.upgrades is map
+        && data.upgrades.keys().hasAll(['hull', 'fuelTank', 'thruster', 'magnetCore', 'boostPower'])
+        && data.upgrades.keys().hasOnly(['hull', 'fuelTank', 'thruster', 'magnetCore', 'boostPower'])
+        && data.upgrades.hull is number && data.upgrades.hull >= 0 && data.upgrades.hull <= 2
+        && data.upgrades.fuelTank is number && data.upgrades.fuelTank >= 0 && data.upgrades.fuelTank <= 2
+        && data.upgrades.thruster is number && data.upgrades.thruster >= 0 && data.upgrades.thruster <= 2
+        && data.upgrades.magnetCore is number && data.upgrades.magnetCore >= 0 && data.upgrades.magnetCore <= 2
+        && data.upgrades.boostPower is number && data.upgrades.boostPower >= 0 && data.upgrades.boostPower <= 2
+        && data.inventory is map
+        && data.inventory.keys().hasAll(['repairKit', 'shieldBattery', 'emergencyFuel', 'magnetPulse'])
+        && data.inventory.keys().hasOnly(['repairKit', 'shieldBattery', 'emergencyFuel', 'magnetPulse'])
+        && data.inventory.repairKit is number && data.inventory.repairKit >= 0
+        && data.inventory.shieldBattery is number && data.inventory.shieldBattery >= 0
+        && data.inventory.emergencyFuel is number && data.inventory.emergencyFuel >= 0
+        && data.inventory.magnetPulse is number && data.inventory.magnetPulse >= 0
+        && data.loadout is list && data.loadout.size() <= 3
+        && data.revision is int && data.revision >= 1
+        && data.updatedAt == request.time;
+    }
+
+    function validProgress() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['stages', 'missions', 'missionsWeek', 'daily', 'revision', 'updatedAt'])
+        && data.keys().hasOnly(['stages', 'missions', 'missionsWeek', 'daily', 'revision', 'updatedAt'])
+        && data.stages is list
+        && data.missions is list
+        && data.missionsWeek is string
+        && (data.daily == null || data.daily is map)
+        && data.revision is int && data.revision >= 1
+        && data.updatedAt == request.time;
+    }
+
+    function validStatistics() {
+      let data = request.resource.data;
+      return data.keys().hasAll([
+          'records', 'totalCoinsCollected', 'totalCrystalsCollected', 'totalFlights', 'totalShieldsUsed',
+          'totalAsteroidsDodged', 'longestSurvival', 'totalDistance', 'totalRevivesUsed',
+          'bestScore', 'bestDistance', 'revision', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'records', 'totalCoinsCollected', 'totalCrystalsCollected', 'totalFlights', 'totalShieldsUsed',
+          'totalAsteroidsDodged', 'longestSurvival', 'totalDistance', 'totalRevivesUsed',
+          'bestScore', 'bestDistance', 'revision', 'updatedAt'
+        ])
+        && data.records is list && data.records.size() <= 30
+        && data.totalCoinsCollected is number && data.totalCoinsCollected >= 0
+        && data.totalCrystalsCollected is number && data.totalCrystalsCollected >= 0
+        && data.totalFlights is number && data.totalFlights >= 0
+        && data.totalShieldsUsed is number && data.totalShieldsUsed >= 0
+        && data.totalAsteroidsDodged is number && data.totalAsteroidsDodged >= 0
+        && data.longestSurvival is number && data.longestSurvival >= 0
+        && data.totalDistance is number && data.totalDistance >= 0
+        && data.totalRevivesUsed is number && data.totalRevivesUsed >= 0
+        && data.bestScore is number && data.bestScore >= 0
+        && data.bestDistance is number && data.bestDistance >= 0
+        && data.revision is int && data.revision >= 1
+        && data.updatedAt == request.time;
+    }
+
+    match /users/{uid} {
+      allow read: if owns(uid);
+      allow create, update: if owns(uid) && validUser(uid);
+      allow delete: if false;
+
+      match /inventory/{documentId} {
+        allow read: if owns(uid);
+        allow create, update: if owns(uid) && documentId == 'default' && validInventory();
+        allow delete: if false;
+      }
+
+      match /progress/{documentId} {
+        allow read: if owns(uid);
+        allow create, update: if owns(uid) && documentId == 'default' && validProgress();
+        allow delete: if false;
+      }
+
+      match /statistics/{documentId} {
+        allow read: if owns(uid);
+        allow create, update: if owns(uid) && documentId == 'default' && validStatistics();
+        allow delete: if false;
+      }
+    }
+  }
+}
